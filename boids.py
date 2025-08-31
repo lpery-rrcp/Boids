@@ -42,6 +42,13 @@ class Boids:
     def show(self, screen):
         pygame.draw.circle(screen, BOID_COLOR, self.position, 3)
 
+    def edges(self):
+        """Avoids screen warping/flashing"""
+        if self.position.x > WIDTH: self.position.x = 0
+        if self.position.x < 0: self.position.x = WIDTH
+        if self.position.y > HEIGHT: self.position.y = 0
+        if self.position.y < 0: self.position.y = HEIGHT
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -63,6 +70,7 @@ def main():
 
             # Drawing the Boids
             for b in boids:
+                b.edges()
                 b.update()
                 b.show(screen)
 
