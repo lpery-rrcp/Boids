@@ -40,7 +40,15 @@ class Boids:
         self.acceleration.update(0, 0) # resets each frame
 
     def show(self, screen):
-        pygame.draw.circle(screen, BOID_COLOR, self.position, 3)
+        """Draws triagles that point to the direction the boids go."""
+        angle = self.velocity.angle_to(pygame.math.Vector2(1, 0))
+        points = [
+            (self.position + pygame.math.Vector2(10, 0).rotate(-angle)),
+            (self.position + pygame.math.Vector2(-10, 5).rotate(-angle)),
+            (self.position + pygame.math.Vector2(-10, -5).rotate(-angle)),
+        ]
+
+        pygame.draw.polygon(screen, BOID_COLOR, points)
 
     def edges(self):
         """Avoids screen warping/flashing"""
