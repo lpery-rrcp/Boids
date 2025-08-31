@@ -11,8 +11,14 @@ import math
 # Screen Variables
 WIDTH = 800
 HEIGHT = 600
-SCREEN_COLOR = (30, 30, 30)
+SCREEN_COLOR = (30, 30, 150)
 BOID_COLOR = (200, 200, 255)
+
+# Boids Variables
+NUM_BOIDS = 60
+SPEED = 4
+FORCE = 0.05
+PERCEPTION_RADIUS = 50
 
 class Boids:
     pass
@@ -26,11 +32,14 @@ def main():
     while running:
         screen.fill(SCREEN_COLOR)
 
-        # for exiting the screen
+        # # for exiting the screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
+        screen.fill(SCREEN_COLOR)
+        # updates the surface display per frame
+        pygame.display.flip()
         # For the FPS
         clock.tick(60)
 
