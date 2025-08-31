@@ -58,26 +58,23 @@ def main():
     
     running = True
     while running:
-        screen.fill(SCREEN_COLOR)
-        
-
-        # # for exiting the screen
+        # for exiting the screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            screen.fill(SCREEN_COLOR)   
+        screen.fill(SCREEN_COLOR)   
 
-            # Drawing the Boids
-            for b in boids:
-                b.edges()
-                b.update()
-                b.show(screen)
+        # Drawing the Boids
+        for b in boids:
+            b.edges()
+            b.update()
+            b.show(screen)
 
-            # updates the surface display per frame
-            pygame.display.flip()
-            # For the FPS
-            clock.tick(60)
+        # updates the surface display per frame
+        pygame.display.flip()
+        # For the FPS
+        clock.tick(60)
 
 if __name__ == "__main__":
     main()
