@@ -66,6 +66,29 @@ class Boids:
             if self.position.distance_to(other.position) < radius:
                 result.append(other)
         return result
+    
+    def align(self, boids):
+        """Alignment rule"""
+        neigh = self.neighbors(boids, PERCEPTION_RADIUS)
+        
+        if not neigh:
+            return pygame.math.Vector2()
+        
+        avg_vec = pygame.math.Vector2()
+        for n in neigh:
+            avg_vec += n.velocity
+        avg_vec /= len(neigh)
+
+        # average velocity
+        if avg_vec.length() > 0:
+            avg_vec = avg_vec.normalize() * SPEED
+
+        steer = avg_vec - self.velocity
+        if steer.length() > FORCE:
+            steer.scale_to_length(FORCE)
+        return steer
+
+
 
 
 def main():
