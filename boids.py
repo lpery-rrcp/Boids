@@ -51,11 +51,22 @@ class Boids:
         pygame.draw.polygon(screen, BOID_COLOR, points)
 
     def edges(self):
-        """Avoids screen warping/flashing"""
+        """Avoids screen warping"""
         if self.position.x > WIDTH: self.position.x = 0
         if self.position.x < 0: self.position.x = WIDTH
         if self.position.y > HEIGHT: self.position.y = 0
         if self.position.y < 0: self.position.y = HEIGHT
+
+    def neighbors(self, boids, radius=PERCEPTION_RADIUS):
+        """Finds which boids are the closest to it."""
+        result = []
+        for other in boids:
+            if other is self:
+                continue
+            if self.position.distance_to(other.position) < radius:
+                result.append(other)
+        return result
+
 
 def main():
     pygame.init()
