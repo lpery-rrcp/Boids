@@ -20,6 +20,11 @@ SPEED = 4
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
 
+# Behavior Weights
+ALIGN_WEIGHT = 1.0
+COHESION_WEIGHT = 1.0
+SEPARATION_WEIGHT = 1.5
+
 class Boids:
     """Spawns boids to simulate flock of birds."""
     def __init__(self):
@@ -68,7 +73,8 @@ class Boids:
         return result
     
     def align(self, boids):
-        """Alignment rule"""
+        """Alignment rule: finds nearby boids and make them go in the same direction."""
+
         neigh = self.neighbors(boids, PERCEPTION_RADIUS)
         
         if not neigh:
@@ -87,7 +93,11 @@ class Boids:
         if steer.length() > FORCE:
             steer.scale_to_length(FORCE)
         return steer
+    
+    def flock(self, boids):
+        alignment = self.align(boids) * ALIGN_WEIGHT
 
+        self.acceleration += alignment
 
 
 
@@ -110,6 +120,7 @@ def main():
         # Drawing the Boids
         for b in boids:
             b.edges()
+            b.flock(boids)
             b.update()
             b.show(screen)
 
