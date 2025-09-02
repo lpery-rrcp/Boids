@@ -15,7 +15,7 @@ SCREEN_COLOR = (30, 30, 150)
 BOID_COLOR = (200, 200, 255)
 
 # Boids Variables
-NUM_BOIDS = 100
+NUM_BOIDS = 60
 SPEED = 4
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
@@ -76,7 +76,6 @@ class Boids:
         """Alignment rule: finds nearby boids and make them go in the same velocity."""
 
         neigh = self.neighbors(boids, PERCEPTION_RADIUS)
-        
         if not neigh:
             return pygame.math.Vector2()
         
@@ -116,12 +115,35 @@ class Boids:
             steer.scale_to_length(FORCE)
         return steer
     
+    def separation(self, boids):
+        """Seperation rule: finds nearby boids and makes sure to avoid collisions."""
+        neigh = self.neighbors(boids, )
+        if not neigh:
+            return pygame.math.Vector2()
+        
+        steer = pygame.math.Vector2()
+        for o in neigh:
+            diff = self.position - o.position
+            dist = diff.length()
+            if dist> 0:
+                diff /= dist # weight nby distance
+            steer += diff
+
+        steer /= len(neigh)
+        if steer.length() > 0:
+            steer = steer.normalize() * SPEED - self.velocity
+            if steer.length() > FORCE:
+                steer.scale_to_length(FORCE)
+        return steer
+    
     def flock(self, boids):
         alignment = self.align(boids) * ALIGN_WEIGHT
         cohesion = self.cohesion(boids) * COHESION_WEIGHT
+        separation = self.separation(boids) * SEPARATION_WEIGHT
 
         self.acceleration += alignment
         self.acceleration += cohesion
+        self.acceleration += separation
 
 
 
