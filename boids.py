@@ -16,28 +16,31 @@ BOID_COLOR = (200, 200, 255)
 
 # Boids Variables
 NUM_BOIDS = 60
-SPEED = 4
+SPEED = 10
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
 
-# Behavior Weights
+# Behavior Weights (the 3 steering forces)
 ALIGN_WEIGHT = 1.0
 COHESION_WEIGHT = 1.0
 SEPARATION_WEIGHT = 1.5
 
 class Boids:
-    """Spawns boids to simulate flock of birds."""
+    """A boid holds position, velocity, acceleration, and steering behaviors."""
     def __init__(self):
         self.position = pygame.math.Vector2(
             random.uniform(0, WIDTH),
             random.uniform(0, HEIGHT)
         )
+        #Random starting heading angle. -> converts to a direction vector
         angle = random.uniform(0, math.pi * 2)
         self.velocity = pygame.math.Vector2(math.cos(angle), math.sin(angle))
+        # Give initial velocity a random length between 2 and SPEED for varaity of motion.
         self.velocity.scale_to_length(random.uniform(2, SPEED))
         self.acceleration = pygame.math.Vector2(0, 0)
 
     def update(self):
+        """Apply acceleration to velocity, clamp to SPEED, update position, and reset acceleration."""
         self.velocity += self.acceleration
         if self.velocity.length() > SPEED:
             self.velocity.scale_to_length(SPEED)
@@ -56,7 +59,9 @@ class Boids:
         pygame.draw.polygon(screen, BOID_COLOR, points)
 
     def edges(self):
-        """Avoids screen warping"""
+        """Avoids screen warping:
+        - if boids goes out of the screen then it appears on the opposite side.
+        """
         if self.position.x > WIDTH: self.position.x = 0
         if self.position.x < 0: self.position.x = WIDTH
         if self.position.y > HEIGHT: self.position.y = 0
@@ -137,6 +142,9 @@ class Boids:
         return steer
     
     def flock(self, boids):
+        """Combines the 3 steering behaviors: Alignment, Cohesion, and Seperation.
+        - Each behavior is multiply by its weight.
+        """
         alignment = self.align(boids) * ALIGN_WEIGHT
         cohesion = self.cohesion(boids) * COHESION_WEIGHT
         separation = self.separation(boids) * SEPARATION_WEIGHT
@@ -152,6 +160,7 @@ def main():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     clock = pygame.time.Clock()
     
+    # Creates boids list. look up spacial hashing
     boids = [Boids() for _ in range(NUM_BOIDS)]
     
     running = True
@@ -165,10 +174,10 @@ def main():
 
         # Drawing the Boids
         for b in boids:
-            b.edges()
-            b.flock(boids)
-            b.update()
-            b.show(screen)
+            b.edges()       # wrap-around boundaries
+            b.flock(boids)  # compute steering forces based on neighbors
+            b.update()      # apply acceleration and move
+            b.show(screen)  # render to the screen
 
         # updates the surface display per frame
         pygame.display.flip()
