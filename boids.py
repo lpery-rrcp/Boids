@@ -15,7 +15,7 @@ SCREEN_COLOR = (30, 30, 150)
 BOID_COLOR = (200, 200, 255)
 
 # Boids Variables
-NUM_BOIDS = 60
+NUM_BOIDS = 100
 SPEED = 4
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
@@ -73,31 +73,55 @@ class Boids:
         return result
     
     def align(self, boids):
-        """Alignment rule: finds nearby boids and make them go in the same direction."""
+        """Alignment rule: finds nearby boids and make them go in the same velocity."""
 
         neigh = self.neighbors(boids, PERCEPTION_RADIUS)
         
         if not neigh:
             return pygame.math.Vector2()
         
+        # Average neighbor velocities
         avg_vec = pygame.math.Vector2()
         for n in neigh:
             avg_vec += n.velocity
         avg_vec /= len(neigh)
 
-        # average velocity
+        # Convert average to desired velocity
         if avg_vec.length() > 0:
             avg_vec = avg_vec.normalize() * SPEED
 
+        # Steering = desired - current velocity (limited by FORCE)
         steer = avg_vec - self.velocity
+        if steer.length() > FORCE:
+            steer.scale_to_length(FORCE)
+        return steer
+    
+    def cohesion(self, boids):
+        """Cohesion rule: finds nearby boids and make them go in the same direction."""
+        neigh = self.neighbors(boids, PERCEPTION_RADIUS)
+        if not neigh:
+            return pygame.math.Vector2()
+        
+        center = pygame.math.Vector2()
+        for o in neigh:
+            center += o.position
+        center /= len(neigh)
+
+        desired = center - self.position
+        if desired.length() > 0:
+            desired = desired.normalize() * SPEED
+
+        steer = desired - self.velocity
         if steer.length() > FORCE:
             steer.scale_to_length(FORCE)
         return steer
     
     def flock(self, boids):
         alignment = self.align(boids) * ALIGN_WEIGHT
+        cohesion = self.cohesion(boids) * COHESION_WEIGHT
 
         self.acceleration += alignment
+        self.acceleration += cohesion
 
 
 
