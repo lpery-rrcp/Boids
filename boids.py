@@ -15,7 +15,7 @@ SCREEN_COLOR = (30, 30, 150)
 BOID_COLOR = (200, 200, 255)
 
 # Boids Variables
-NUM_BOIDS = 60
+NUM_BOIDS = 6
 SPEED = 10
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
@@ -179,7 +179,8 @@ def main():
     # Creates boids list. look up spacial hashing
     boids = [Boids() for _ in range(NUM_BOIDS)]
 
-   
+    # Pause / add / remove boids
+    paused = False
     
     running = True
     while running:
@@ -191,14 +192,25 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            # for Pause / add / remove boids
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    paused = not paused # toggled pause
+                elif event.key == pygame.K_a:
+                    boids.append(Boids()) # add a boid
+                elif event.key == pygame.K_r:
+                    if boids:
+                        boids.pop() # remove a boid
+
 
         screen.fill(SCREEN_COLOR)   
 
         # Drawing the Boids
         for b in boids:
             b.edges()       # wrap-around boundaries
-            b.flock(boids, mouse_pos, mouse_pressed)  # compute steering forces based on neighbors
-            b.update()      # apply acceleration and move
+            if not paused:
+                b.flock(boids, mouse_pos, mouse_pressed)  # compute steering forces based on neighbors
+                b.update()      # apply acceleration and move
             b.show(screen)  # render to the screen
 
         if mouse_pressed:
