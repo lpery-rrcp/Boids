@@ -20,6 +20,10 @@ SPEED = 10
 FORCE = 0.05
 PERCEPTION_RADIUS = 50
 
+# mouse repeling
+CLICK_RADIUS = 80
+CLICK_FORCE = 0.5
+
 # Behavior Weights (the 3 steering forces)
 ALIGN_WEIGHT = 1.0
 COHESION_WEIGHT = 1.0
@@ -141,8 +145,18 @@ class Boids:
                 steer.scale_to_length(FORCE)
         return steer
     
-    def flock(self, boids):
-        """Combines the 3 steering behaviors: Alignment, Cohesion, and Seperation.
+    def mouse_repulsion(self, mouse_pos):
+        """Extra force: repels boids away from mouse click."""
+        diff = self.position - pygame.math.Vector2(mouse_pos)
+        dist = diff.length()
+        if 0.001 < dist < CLICK_RADIUS:
+            # stregth will fade further away from the center
+            repel = diff.normalize() * (CLICK_FORCE * (CLICK_RADIUS - dist) / CLICK_RADIUS)
+            return repel
+        return pygame.math.Vector2()
+
+    def flock(self, boids, mouse_pos=None, mouse_pressed=False):
+        """Combines the 3 steering behaviors: Alignment, Cohesion, and Seperation. And click seperation.
         - Each behavior is multiply by its weight.
         """
         alignment = self.align(boids) * ALIGN_WEIGHT
@@ -153,6 +167,8 @@ class Boids:
         self.acceleration += cohesion
         self.acceleration += separation
 
+        if mouse_pressed and mouse_pos is not None:
+            self.acceleration += self.mouse_repulsion(mouse_pos)
 
 
 def main():
@@ -162,9 +178,15 @@ def main():
     
     # Creates boids list. look up spacial hashing
     boids = [Boids() for _ in range(NUM_BOIDS)]
+
+   
     
     running = True
     while running:
+        # Mouse clicks
+        mouse_pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()[0]
+
         # for exiting the screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -175,9 +197,12 @@ def main():
         # Drawing the Boids
         for b in boids:
             b.edges()       # wrap-around boundaries
-            b.flock(boids)  # compute steering forces based on neighbors
+            b.flock(boids, mouse_pos, mouse_pressed)  # compute steering forces based on neighbors
             b.update()      # apply acceleration and move
             b.show(screen)  # render to the screen
+
+        if mouse_pressed:
+            pygame.draw.circle(screen, (255, 50, 50), mouse_pos, CLICK_RADIUS, 2)
 
         # updates the surface display per frame
         pygame.display.flip()
